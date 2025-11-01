@@ -10,12 +10,10 @@ class CalculatorBrain {
         EQUAL("="),
         SQRT("√"),
         PERCENTAGE("%"),
-        CLEAR("AC"),
-        CLEAR_ENTRY("C");
-
+        CLEAR("C"),
+        ALL_CLEAR("AC");
 
         companion object {
-            // Converte uma string em uma operação
             fun parseOperation(op: String): Operation {
                 return when (op) {
                     "+" -> ADD
@@ -25,59 +23,41 @@ class CalculatorBrain {
                     "=" -> EQUAL
                     "√" -> SQRT
                     "%" -> PERCENTAGE
-                    "AC" -> CLEAR
-                    "C" -> CLEAR_ENTRY
+                    "C" -> CLEAR
+                    "AC" -> ALL_CLEAR
                     else -> EQUAL
                 }
             }
         }
     }
 
+    var operand = 0.0
+    var operation: Operation? = null
 
-    var  operand = 0.0
-    var  operation : Operation? = null
 
-    // Calcula o resultado com base na operação pendente
-    fun unaryOperation(newOperand : Double, newOperation : Operation) {
-        var result = newOperand
-        when(newOperation){
-            Operation.SQRT -> result = kotlin.math.sqrt(newOperand)
-            Operation.PERCENTAGE -> result = newOperand / 100
-            Operation.EQUAL -> {
-                operation?.let {
-                    when(operation){
-                        Operation.ADD ->  { result = operand + newOperand }
-                        Operation.SUBTRACT -> result = operand - newOperand
-                        Operation.MULTIPLY -> result = operand * newOperand
-                        Operation.DIVIDE -> result = operand / newOperand
-                        else -> {}
-                    }
-                }
-            }
-            Operation.CLEAR -> {
+    fun doOperation(newOperand: Double, newOperation: Operation) {
+        when (newOperation) {
+            Operation.ADD -> operand += newOperand
+            Operation.SUBTRACT -> operand -= newOperand
+            Operation.MULTIPLY -> operand *= newOperand
+            Operation.DIVIDE -> operand /= newOperand
+
+            Operation.SQRT -> operand = kotlin.math.sqrt(newOperand)
+            Operation.PERCENTAGE -> operand = newOperand / 100.0
+
+            Operation.ALL_CLEAR -> {
+                operand = 0.0
                 operation = null
-                result = 0.0
             }
-            Operation.CLEAR_ENTRY -> result = 0.0
-            else -> {}
 
-        }
-        operand = result
-    }
+            Operation.CLEAR -> {
+            }
 
-    fun doOperation(newOperand : Double, newOperation : Operation) {
-        var result = newOperand
-        // Executa a operação pendente se existir
-        when(operation){
-            Operation.ADD ->  { result = operand + newOperand }
-            Operation.SUBTRACT -> result = operand - newOperand
-            Operation.MULTIPLY -> result = operand * newOperand
-            Operation.DIVIDE -> result = operand / newOperand
-            else -> {}
+            Operation.EQUAL -> {
+
+            }
         }
-// Armazena a nova operação para o próximo cálculo
+
         operation = newOperation
-        operand = result
     }
-
 }

@@ -55,29 +55,68 @@ fun CalculatorView(
     }
 
 
-    val onOperationPressed : (String) -> Unit = { op ->
+    val onOperationPressed: (String) -> Unit = { op ->
+        when (op) {
+            "C" -> {
+                displayText = if (displayText.length > 1) displayText.dropLast(1) else "0"
+            }
+            "AC" -> {
+                displayText = "0"
+                calculatorBrain.doOperation(0.0, CalculatorBrain.Operation.ALL_CLEAR)
+                userIsTypingNumber = false
+            }
+            else -> {
+                val operation = CalculatorBrain.Operation.parseOperation(op)
+                val currentValue = displayText.toDouble()
 
-        if ( op == "=" || op == "AC" ||  op == "√"|| op == "%" || op == "C") {
-            calculatorBrain.unaryOperation(
-                displayText.toDouble(),
-                CalculatorBrain.Operation.parseOperation(op)
-            )
-        }else {
-            calculatorBrain.doOperation(
-                displayText.toDouble(),
-                CalculatorBrain.Operation.parseOperation(op)
-            )
+                when (operation) {
+                    CalculatorBrain.Operation.SQRT -> {
+                        val result = kotlin.math.sqrt(currentValue)
+                        calculatorBrain.operand = result
+                        displayText = if (result % 1.0 == 0.0) result.toInt().toString() else result.toString()
+                    }
+                    CalculatorBrain.Operation.PERCENTAGE -> {
+                        val result = currentValue / 100.0
+                        calculatorBrain.operand = result
+                        displayText = if (result % 1.0 == 0.0) result.toInt().toString() else result.toString()
+                    }
+                    CalculatorBrain.Operation.EQUAL -> {
+                        if (calculatorBrain.operation != null) {
+                            val result = when (calculatorBrain.operation) {
+                                CalculatorBrain.Operation.ADD -> calculatorBrain.operand + currentValue
+                                CalculatorBrain.Operation.SUBTRACT -> calculatorBrain.operand - currentValue
+                                CalculatorBrain.Operation.MULTIPLY -> calculatorBrain.operand * currentValue
+                                CalculatorBrain.Operation.DIVIDE -> calculatorBrain.operand / currentValue
+                                else -> currentValue
+                            }
+                            calculatorBrain.operand = result
+                            displayText = if (result % 1.0 == 0.0) result.toInt().toString() else result.toString()
+                            calculatorBrain.operation = null
+                        }
+                    }
+                    else -> {
+                        // Operações básicas: +, -, ×, ÷
+                        if (calculatorBrain.operation != null) {
+                            val result = when (calculatorBrain.operation) {
+                                CalculatorBrain.Operation.ADD -> calculatorBrain.operand + currentValue
+                                CalculatorBrain.Operation.SUBTRACT -> calculatorBrain.operand - currentValue
+                                CalculatorBrain.Operation.MULTIPLY -> calculatorBrain.operand * currentValue
+                                CalculatorBrain.Operation.DIVIDE -> calculatorBrain.operand / currentValue
+                                else -> currentValue
+                            }
+                            calculatorBrain.operand = result
+                        } else {
+                            calculatorBrain.operand = currentValue
+                        }
+                        calculatorBrain.operation = operation
+
+                        val result = calculatorBrain.operand
+                        displayText = if (result % 1.0 == 0.0) result.toInt().toString() else result.toString()
+                    }
+                }
+                userIsTypingNumber = false
+            }
         }
-
-        val result = calculatorBrain.operand
-
-        if ((result % 1.0) == 0.0 ) {
-            displayText = result.toInt().toString()
-        }else{
-            displayText = result.toString()
-        }
-
-        userIsTypingNumber = false
     }
 
     Column(
